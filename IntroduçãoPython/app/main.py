@@ -1,3 +1,5 @@
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 from app.services.aluno_service import (
     criar_aluno,
     listar_alunos,
@@ -5,68 +7,37 @@ from app.services.aluno_service import (
     remover_aluno
 )
 
+app = FastAPI(title="Sistema de Alunos")
 
-def menu():
-    while True:
-        print("\n========== SISTEMA DE ALUNOS ==========")
-        print("1 - Cadastrar aluno")
-        print("2 - Listar alunos")
-        print("3 - Atualizar aluno")
-        print("4 - Remover aluno")
-        print("0 - Sair")
-        print("======================================")
+class AlunoCreate(BaseModel):
+    nome: str
+    email: str
+    curso: str
 
-        op = input("Escolha uma opção: ")
+class AlunoUpdate(BaseModel):
+    nome: str
+    email: str
 
-        if op == "1":
-            print("\n--- Cadastro de Aluno ---")
-            nome = input("Nome: ")
-            email = input("Email: ")
-            curso = input("Curso (ex: GES, GEC): ").upper()
+@app.post("/alunos/", status_code=201)
+def cadastrar_aluno(aluno: AlunoCreate):
+    matricula = criar_aluno(aluno.nome, aluno.email, aluno.curso)
+    return {"mensagem": "Aluno cadastrado com sucesso", "matricula": matricula}
 
-            matricula = criar_aluno(nome, email, curso)
+@app.get("/alunos/", status_code=200)
+def obter_alunos():
+    alunos = listar_alunos()
+    return alunos
 
-            print("\n Aluno cadastrado com sucesso!")
-            print(f" Matrícula gerada: {matricula}")
+@app.put("/alunos/{matricula}", status_code=200)
+def editar_aluno(matricula: str, aluno: AlunoUpdate):
+    sucesso = atualizar_aluno(matricula, aluno.nome, aluno.email)
+    if not sucesso:
+        raise HTTPException(status_code=404, detail="Aluno não encontrado")
+    return {"mensagem": "Dados atualizados com sucesso"}
 
-        elif op == "2":
-            print("\n--- Lista de Alunos ---")
-            alunos = listar_alunos()
-
-            if not alunos:
-                print(" Nenhum aluno cadastrado.")
-            else:
-                for m, d in alunos.items():
-                    print("\n----------------------------------")
-                    print(f"Matrícula: {m}")
-                    print(f"Nome: {d['nome']}")
-                    print(f"Email: {d['email']}")
-                    print(f"Curso: {d['curso']}")
-                print("\n----------------------------------")
-
-        elif op == "3":
-            print("\n--- Atualização de Aluno ---")
-            m = input("Matrícula do aluno: ")
-            nome = input("Novo nome: ")
-            email = input("Novo email: ")
-
-            if atualizar_aluno(m, nome, email):
-                print("\n Dados atualizados com sucesso!")
-            else:
-                print("\n Aluno não encontrado.")
-
-        elif op == "4":
-            print("\n--- Remoção de Aluno ---")
-            m = input("Matrícula do aluno: ")
-
-            if remover_aluno(m):
-                print("\n Aluno removido com sucesso.")
-            else:
-                print("\n Aluno não encontrado.")
-
-        elif op == "0":
-            print("\n Encerrando o sistema...")
-            break
-
-        else:
-            print("\n Opção inválida. Tente novamente.")
+@app.delete("/alunos/{matricula}", status_code=200)
+def deletar_aluno(matricula: str):
+    sucesso = remover_aluno(matricula)
+    if not sucesso:
+        raise HTTPException(status_code=404, detail="Aluno não encontrado")
+    return {"mensagem": "Aluno removido com sucesso"}

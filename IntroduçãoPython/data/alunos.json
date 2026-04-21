@@ -1,14 +1,14 @@
 {
-    "GES1": {
-        "nome": "joao",
-        "email": "joao@gmail.com",
-        "curso": "GES",
-        "matricula": "GES1"
-    },
     "GET1": {
-        "nome": "maria",
-        "email": "maria@gmail.com",
+        "nome": "string",
+        "email": "string",
         "curso": "GET",
         "matricula": "GET1"
+    },
+    "string2": {
+        "nome": "string",
+        "email": "string",
+        "curso": "string",
+        "matricula": "string2"
     }
 }
