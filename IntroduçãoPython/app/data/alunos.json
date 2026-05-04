@@ -1,0 +1,50 @@
+{
+    "contadores": {
+        "GES": 3,
+        "GEC": 4
+    },
+    "alunos": {
+        "GES1": {
+            "id": "GES1",
+            "nome": "Aluno GES 0",
+            "email": "ges0@inatel.br",
+            "curso": "GES",
+            "matricula": 1
+        },
+        "GES2": {
+            "id": "GES2",
+            "nome": "Nome Atualizado GES2",
+            "email": "ges1@inatel.br",
+            "curso": "GES",
+            "matricula": 2
+        },
+        "GES3": {
+            "id": "GES3",
+            "nome": "Aluno GES 2",
+            "email": "ges2@inatel.br",
+            "curso": "GES",
+            "matricula": 3
+        },
+        "GEC1": {
+            "id": "GEC1",
+            "nome": "Aluno GEC 0",
+            "email": "gec0@inatel.br",
+            "curso": "GEC",
+            "matricula": 1
+        },
+        "GEC3": {
+            "id": "GEC3",
+            "nome": "Aluno GEC 2",
+            "email": "gec2@inatel.br",
+            "curso": "GEC",
+            "matricula": 3
+        },
+        "GEC4": {
+            "id": "GEC4",
+            "nome": "Novo Aluno",
+            "email": "novo@inatel.br",
+            "curso": "GEC",
+            "matricula": 4
+        }
+    }
+}

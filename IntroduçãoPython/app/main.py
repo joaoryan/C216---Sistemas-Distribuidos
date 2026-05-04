@@ -1,43 +1,47 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from app.services.aluno_service import (
-    criar_aluno,
-    listar_alunos,
-    atualizar_aluno,
-    remover_aluno
-)
+from fastapi import FastAPI, HTTPException, APIRouter
+from app.models.aluno import AlunoCreate, AlunoUpdate
+from app.services import aluno_service
 
-app = FastAPI(title="Sistema de Alunos")
+app = FastAPI(title="Gerenciador de Alunos")
 
-class AlunoCreate(BaseModel):
-    nome: str
-    email: str
-    curso: str
+router = APIRouter(prefix="/api/v1/alunos", tags=["Alunos"])
 
-class AlunoUpdate(BaseModel):
-    nome: str
-    email: str
-
-@app.post("/alunos/", status_code=201)
+@router.post("/", status_code=201)
 def cadastrar_aluno(aluno: AlunoCreate):
-    matricula = criar_aluno(aluno.nome, aluno.email, aluno.curso)
-    return {"mensagem": "Aluno cadastrado com sucesso", "matricula": matricula}
+    if aluno.curso.upper() not in ["GES", "GEC"]:
+        raise HTTPException(status_code=400, detail="Curso deve ser GES ou GEC")
+        
+    novo_aluno = aluno_service.criar_aluno(aluno.nome, aluno.email, aluno.curso)
+    return novo_aluno
 
-@app.get("/alunos/", status_code=200)
+@router.get("/", status_code=200)
 def obter_alunos():
-    alunos = listar_alunos()
-    return alunos
+    return aluno_service.listar_alunos()
 
-@app.put("/alunos/{matricula}", status_code=200)
-def editar_aluno(matricula: str, aluno: AlunoUpdate):
-    sucesso = atualizar_aluno(matricula, aluno.nome, aluno.email)
-    if not sucesso:
+@router.get("/{aluno_id}", status_code=200)
+def obter_aluno_por_id(aluno_id: str):
+    aluno = aluno_service.buscar_aluno_por_id(aluno_id.upper())
+    if not aluno:
         raise HTTPException(status_code=404, detail="Aluno não encontrado")
-    return {"mensagem": "Dados atualizados com sucesso"}
+    return aluno
 
-@app.delete("/alunos/{matricula}", status_code=200)
-def deletar_aluno(matricula: str):
-    sucesso = remover_aluno(matricula)
+@router.patch("/{aluno_id}", status_code=200)
+def editar_aluno(aluno_id: str, aluno: AlunoUpdate):
+    aluno_atualizado = aluno_service.atualizar_aluno(aluno_id.upper(), aluno.dict(exclude_unset=True))
+    if not aluno_atualizado:
+        raise HTTPException(status_code=404, detail="Aluno não encontrado")
+    return aluno_atualizado
+
+@router.delete("/{aluno_id}", status_code=200)
+def deletar_aluno(aluno_id: str):
+    sucesso = aluno_service.remover_aluno(aluno_id.upper())
     if not sucesso:
         raise HTTPException(status_code=404, detail="Aluno não encontrado")
     return {"mensagem": "Aluno removido com sucesso"}
+
+@router.delete("/", status_code=200)
+def resetar_lista():
+    aluno_service.resetar_alunos()
+    return {"mensagem": "Lista de alunos resetada com sucesso"}
+
+app.include_router(router)

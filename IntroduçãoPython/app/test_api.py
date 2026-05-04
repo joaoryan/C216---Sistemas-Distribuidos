@@ -1,39 +1,38 @@
 from fastapi.testclient import TestClient
 from app.main import app
-import pytest
 
 client = TestClient(app)
 
-matricula_teste = None
+def setup_function():
+    client.delete("/api/v1/alunos/")
 
-def test_criar_aluno():
-    global matricula_teste
-    response = client.post("/alunos/", json={
-        "nome": "João", 
-        "email": "joao@teste.com", 
-        "curso": "GES"
-    })
-    assert response.status_code == 201
-    dados = response.json()
-    assert "matricula" in dados
-    matricula_teste = dados["matricula"]
+def test_crud_completo_alunos():
+    for i in range(3):
+        res = client.post("/api/v1/alunos/", json={"nome": f"Aluno GES {i}", "email": f"ges{i}@inatel.br", "curso": "GES"})
+        assert res.status_code == 201
 
-def test_listar_alunos():
-    response = client.get("/alunos/")
-    assert response.status_code == 200
-    assert isinstance(response.json(), dict)
+    for i in range(3):
+        res = client.post("/api/v1/alunos/", json={"nome": f"Aluno GEC {i}", "email": f"gec{i}@inatel.br", "curso": "GEC"})
+        assert res.status_code == 201
 
-def test_atualizar_aluno():
-    global matricula_teste
-    response = client.put(f"/alunos/{matricula_teste}", json={
-        "nome": "João editado",
-        "email": "joao.edit@teste.com"
-    })
-    assert response.status_code == 200
-    assert response.json() == {"mensagem": "Dados atualizados com sucesso"}
+    res_listar = client.get("/api/v1/alunos/")
+    assert res_listar.status_code == 200
+    alunos = res_listar.json()
+    assert len(alunos) == 6
 
-def test_remover_aluno():
-    global matricula_teste
-    response = client.delete(f"/alunos/{matricula_teste}")
-    assert response.status_code == 200
-    assert response.json() == {"mensagem": "Aluno removido com sucesso"}
+    res_busca = client.get("/api/v1/alunos/GEC1")
+    assert res_busca.status_code == 200
+    assert res_busca.json()["nome"] == "Aluno GEC 0"
+
+    res_patch = client.patch("/api/v1/alunos/GES2", json={"nome": "Nome Atualizado GES2"})
+    assert res_patch.status_code == 200
+    assert res_patch.json()["nome"] == "Nome Atualizado GES2"
+
+    res_delete = client.delete("/api/v1/alunos/GEC2")
+    assert res_delete.status_code == 200
+
+    res_busca_removido = client.get("/api/v1/alunos/GEC2")
+    assert res_busca_removido.status_code == 404
+
+    res_novo_gec = client.post("/api/v1/alunos/", json={"nome": "Novo Aluno", "email": "novo@inatel.br", "curso": "GEC"})
+    assert res_novo_gec.json()["id"] == "GEC4"

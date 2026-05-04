@@ -1,14 +1,15 @@
 {
-    "GET1": {
-        "nome": "string",
-        "email": "string",
-        "curso": "GET",
-        "matricula": "GET1"
+    "contadores": {
+        "GES": 1,
+        "GEC": 0
     },
-    "string2": {
-        "nome": "string",
-        "email": "string",
-        "curso": "string",
-        "matricula": "string2"
+    "alunos": {
+        "GES1": {
+            "id": "GES1",
+            "nome": "string",
+            "email": "string",
+            "curso": "GES",
+            "matricula": 1
+        }
     }
 }
